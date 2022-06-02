@@ -11,3 +11,4 @@ Cargo.lock
 
 /.idea
 dash-spv-storage.iml
+DashSyncRS.sqlite
