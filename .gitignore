@@ -11,9 +11,4 @@ Cargo.lock
 
 /.idea
 dash-spv-storage.iml
-
-# Added by cargo
-#
-# already existing elements were commented out
-/target
-#Cargo.lock
+DashSyncRS.sqlite
