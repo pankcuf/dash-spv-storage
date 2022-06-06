@@ -4,7 +4,9 @@ mod tests {
     use std::collections::BTreeMap;
     use dash_spv_primitives::crypto::{BDictionary, Boolean, UInt128, UInt160, UInt256, UInt384, UInt768};
     use dash_spv_primitives::hashes::hex::FromHex;
-    use crate::{create_masternode, create_masternode_list, delete_masternode_list, masternode_with_entry_hash, masternode_with_pro_reg_tx_hash, masternode_list_for_block, update_masternode_list, create_quorum, quorum_for_commitment_hash};
+    use crate::models::masternode::masternode::{create_masternode, masternode_with_entry_hash, masternode_with_pro_reg_tx_hash};
+    use crate::models::masternode::masternode_list::{create_masternode_list, delete_masternode_list, masternode_list_for_block, update_masternode_list};
+    use crate::models::masternode::quorum::{create_quorum, quorum_for_commitment_hash};
 
     #[test]
     fn test_masternode_list_crud() {
