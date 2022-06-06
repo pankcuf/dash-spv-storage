@@ -9,7 +9,7 @@ table! {
         owner_keys_wallet_id -> Nullable<Text>,
         voting_keys_index -> Nullable<Integer>,
         voting_keys_wallet_id -> Nullable<Text>,
-        provider_registration_transaction -> Nullable<Integer>,
+        provider_registration_transaction_id -> Nullable<Integer>,
         masternode_id -> Nullable<Integer>,
     }
 }
