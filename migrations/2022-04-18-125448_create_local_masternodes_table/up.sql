@@ -9,6 +9,6 @@ CREATE TABLE local_masternodes (
     owner_keys_wallet_id VARCHAR,
     voting_keys_index INTEGER,
     voting_keys_wallet_id VARCHAR,
-    provider_registration_transaction INTEGER,
+    provider_registration_transaction_id INTEGER,
     masternode_id INTEGER
 )
