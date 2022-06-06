@@ -12,3 +12,5 @@ Cargo.lock
 /.idea
 dash-spv-storage.iml
 DashSyncRS.sqlite
+DashSyncRS.sqlite-shm
+DashSyncRS.sqlite-wal
