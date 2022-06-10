@@ -1,6 +1,5 @@
 use std::ops::DerefMut;
-use diesel::{Expression, Insertable, QueryDsl, QueryResult, RunQueryDsl, SelectableExpression, Table};
-use diesel::query_dsl::methods;
+use diesel::{Insertable, QueryResult, RunQueryDsl, Table};
 use crate::connection_manager::get_pooled_connection;
 
 mod schema;

@@ -1,9 +1,11 @@
 use std::ops::DerefMut;
 use chrono::NaiveDateTime;
+use dash_spv_models::{common, masternode};
+use dash_spv_models::common::BlockData;
 use dash_spv_primitives::crypto::{BDictionary, Boolean, UInt128, UInt160, UInt256, UInt384};
 use diesel::{BoolExpressionMethods, ExpressionMethods, QueryDsl, QueryResult, RunQueryDsl, Table};
 
-use crate::{delete, schema};
+use crate::delete;
 use crate::connection_manager::get_pooled_connection;
 use crate::schema::masternodes;
 /// queries
@@ -126,15 +128,13 @@ pub fn create_masternode<'a>(
         provider_registration_transaction_hash,
         masternode_entry_hash
     };
-    diesel::insert_into(schema::masternodes::dsl::masternodes)
+    diesel::insert_into(masternodes::dsl::masternodes)
         .values(&records)
         .execute(pooled_conn.deref_mut())
 }
 
 
-/**
- * "(providerRegistrationTransactionHash == %@) && (chain == %@)"
- */
+/// "(providerRegistrationTransactionHash == %@) && (chain == %@)"
 pub fn read_masternode<'a, Predicate>(predicate: Predicate) -> QueryResult<Masternode<'a>>
     where Predicate:
     diesel::Expression<SqlType = diesel::sql_types::Bool> +
@@ -150,18 +150,14 @@ pub fn read_masternode<'a, Predicate>(predicate: Predicate) -> QueryResult<Maste
         .first::<Masternode>(pooled_conn.deref_mut())
 }
 
-/**
- * "(providerRegistrationTransactionHash == %@) && (chain == %@)"
- */
+/// "(providerRegistrationTransactionHash == %@) && (chain == %@)"
 pub fn masternode_with_pro_reg_tx_hash<'a>(chain_id: i32, pro_reg_tx_hash: UInt256) -> QueryResult<Masternode<'a>> {
     let predicate = masternodes::chain_id.eq(chain_id)
         .and(masternodes::provider_registration_transaction_hash.eq(pro_reg_tx_hash));
     read_masternode(predicate)
 }
 
-/**
- * "(simplifiedMasternodeEntryHash == %@) && (chain == %@)"
- */
+/// "(simplifiedMasternodeEntryHash == %@) && (chain == %@)"
 pub fn masternode_with_entry_hash<'a>(chain_id: i32, entry_hash: UInt256) -> QueryResult<Masternode<'a>> {
     let predicate = masternodes::chain_id.eq(chain_id)
         .and(masternodes::masternode_entry_hash.eq(entry_hash));
@@ -181,4 +177,59 @@ pub fn delete_having_provider_transaction_hashes(chain_id: i32, hashes: Vec<UInt
         .and(masternodes::provider_registration_transaction_hash.eq_any(hashes));
     let source = masternodes::dsl::masternodes.filter(predicate);
     delete(source)
+}
+
+/// "masternodeLists.@count == 0"
+pub fn delete_masternodes_with_empty_lists(chain_id: i32) -> QueryResult<usize> {
+    let predicate = masternodes::chain_id.eq(chain_id);
+    let source = masternodes::dsl::masternodes.filter(predicate);
+    delete(source)
+}
+
+
+impl<'a> Masternode<'a> {
+    pub fn simplified_masternode_entry_with_block_height_lookup<BHL>(&self, block_height_lookup: BHL) -> masternode::MasternodeEntry
+        where BHL: Fn(UInt256) -> u32 {
+        // chain ???
+        // confirmed_hash_hashed_with_provider_registration_transaction_hash ???
+        // block data ???
+        // let block_height = block_height_lookup(self.)
+
+
+        let previous_operator_public_keys = self.prev_operator_bls_public_keys.map
+            .iter()
+            .map(|(&hash, &value)|(BlockData { height: block_height_lookup(hash), hash }, value))
+            .collect();
+
+        let previous_entry_hashes = self.prev_masternode_entry_hashes.map
+            .iter()
+            .map(|(&hash, &value)|(BlockData { height: block_height_lookup(hash), hash }, value))
+            .collect();
+        let previous_validity = self.prev_validity.map
+            .iter()
+            .map(|(&hash, &value)|(BlockData { height: block_height_lookup(hash), hash }, value.0))
+            .collect();
+
+
+
+        masternode::MasternodeEntry {
+            provider_registration_transaction_hash: self.provider_registration_transaction_hash,
+            confirmed_hash: self.confirmed_hash,
+            confirmed_hash_hashed_with_provider_registration_transaction_hash: None,
+            socket_address: common::SocketAddress {
+                ip_address: self.ipv6_address,
+                port: self.port as u16
+            },
+            operator_public_key: self.operator_bls_public_key,
+            previous_operator_public_keys,
+            previous_entry_hashes,
+            previous_validity,
+            known_confirmed_at_height: Some(self.known_confirmed_at_height as u32),
+            update_height: self.update_height as u32,
+            key_id_voting: self.key_id_voting,
+            is_valid: self.is_valid,
+            entry_hash: self.masternode_entry_hash
+        }
+    }
+
 }
