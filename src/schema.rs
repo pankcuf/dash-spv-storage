@@ -39,7 +39,7 @@ table! {
     blockchain_identity_key_paths (id) {
         id -> Integer,
         blockchain_identity_id -> Integer,
-        derivation_path_id -> Integer,
+        derivation_path_id -> Nullable<Integer>,
         key_id -> Integer,
         key_status -> SmallInt,
         key_type -> SmallInt,
@@ -167,7 +167,7 @@ table! {
         friend_request_id -> Nullable<Integer>,
         sync_block_height -> Integer,
         public_key_identifier -> Text,
-        derivation_path -> Binary,
+        derivation_path -> Nullable<Binary>,
     }
 }
 
