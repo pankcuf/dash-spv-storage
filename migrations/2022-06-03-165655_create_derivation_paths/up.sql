@@ -7,5 +7,5 @@ CREATE TABLE derivation_paths
     friend_request_id INTEGER,
     sync_block_height INTEGER NOT NULL,
     public_key_identifier VARCHAR NOT NULL,
-    derivation_path BLOB NOT NULL
+    derivation_path BLOB
 )
