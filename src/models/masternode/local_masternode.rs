@@ -1,4 +1,8 @@
 use crate::schema::local_masternodes;
+/// queries:
+/// "providerRegistrationTransaction.transactionHash.txHash == %@"
+/// "providerRegistrationTransaction.transactionHash.chain == %@"
+/// "(providerRegistrationTransaction.transactionHash.txHash IN %@)"
 
 #[derive(Identifiable, Queryable, PartialEq, Eq, Debug)]
 // #[belongs_to(Masternode)]
@@ -30,3 +34,19 @@ pub struct NewLocalMasternode<'a> {
     pub provider_registration_transaction_id: i32,
     pub masternode_id: i32,
 }
+
+// pub fn delete_local_masternodes(chain_id: i32) -> QueryResult<usize> {
+//     // need to impl pro_reg_tx and it's join
+//     let predicate = schema::local_masternodes::chain_id.eq(chain_id);
+//     let source = local_masternodes.filter(predicate);
+//     delete(source)
+// }
+
+
+// pub fn local_masternode_for_pro_reg_tx_hash(hash: UInt256) -> QueryResult<LocalMasternode> {
+//     let mut pooled_conn = get_pooled_connection();
+//     // let predicate  = schema::local_masternodes::provider_registration_transaction
+//     local_masternodes::select(local_masternodes, local_masternodes::all_columns())
+//         .filter(predicate)
+//         .first::<LocalMasternode>(pooled_conn.deref_mut())
+// }
