@@ -51,4 +51,3 @@ pub fn get_pooled_connection() -> PooledConnection<ConnectionManager<SqliteConne
     }
     panic!("Error getting connection from pool");
 }
-

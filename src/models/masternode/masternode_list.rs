@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::ops::DerefMut;
 use dash_spv_models::common::LLMQType;
 use dash_spv_models::masternode::{LLMQEntry, MasternodeEntry};
@@ -97,7 +97,8 @@ pub fn masternode_lists_in(chain_id: i32, block_ids: Vec<i32>) -> QueryResult<Ve
         .and(masternode_lists::block_id.eq_any(block_ids));
     // TODO: make it normal
 
-    masternode_lists::dsl::masternode_lists.select(masternode_lists::dsl::masternode_lists::all_columns())
+    masternode_lists::dsl::masternode_lists
+        .select(masternode_lists::dsl::masternode_lists::all_columns())
         .filter(predicate)
         .get_results(pooled_conn.deref_mut())
 }
@@ -108,14 +109,14 @@ impl<'a> MasternodeList {
     pub fn masternode_list_with_simplified_masternode_entry_pool_and_lookup<BHL>(
         &self,
         masternodes: BTreeMap<UInt256, MasternodeEntry>,
-        quorums: HashMap<LLMQType, HashMap<UInt256, LLMQEntry>>,
+        quorums: BTreeMap<LLMQType, BTreeMap<UInt256, LLMQEntry>>,
         block_height_lookup: BHL
     ) -> dash_spv_models::masternode::MasternodeList
         where BHL: Fn(UInt256) -> u32 + Copy
     {
         let mut pooled_conn = get_pooled_connection();
         let mut masternode_entries: BTreeMap<UInt256, MasternodeEntry> = BTreeMap::new();
-        let mut quorum_entries: HashMap<LLMQType, HashMap<UInt256, LLMQEntry>> = HashMap::new();
+        let mut quorum_entries: BTreeMap<LLMQType, BTreeMap<UInt256, LLMQEntry>> = BTreeMap::new();
 
         if let Ok(ids) = masternode_list_masternodes::dsl::masternode_list_masternodes
             .select(masternode_list_masternodes::masternode_id)
@@ -149,7 +150,7 @@ impl<'a> MasternodeList {
                     result.iter().for_each(|entity| {
                         let llmq_type = LLMQType::from(entity.quorum_type as u8);
                         let llmq_hash = entity.quorum_hash;
-                        quorum_entries.entry(llmq_type).or_insert(HashMap::new()).insert(llmq_hash.clone(), if let Some(quorums_of_type) = quorums.get(&llmq_type) {
+                        quorum_entries.entry(llmq_type).or_insert(BTreeMap::new()).insert(llmq_hash.clone(), if let Some(quorums_of_type) = quorums.get(&llmq_type) {
                             if let Some(entry) = quorums_of_type.get(&llmq_hash) {
                                 Some(entry.clone())
                             } else {

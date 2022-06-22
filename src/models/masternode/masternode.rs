@@ -8,6 +8,7 @@ use diesel::{BoolExpressionMethods, ExpressionMethods, QueryDsl, QueryResult, Ru
 use crate::delete;
 use crate::connection_manager::get_pooled_connection;
 use crate::schema::masternodes;
+
 /// queries
 /// "chain == %@"
 /// "(((address >> %@) & 255) == %@)"
@@ -186,6 +187,18 @@ pub fn delete_masternodes_with_empty_lists(chain_id: i32) -> QueryResult<usize> 
     delete(source)
 }
 
+pub fn save_plaform_ping_info(chain_id: i32, pro_reg_tx_hash: UInt256, platform_ping: i64, platform_ping_date: NaiveDateTime) -> QueryResult<usize> {
+    let mut pooled_conn = get_pooled_connection();
+    let predicate = masternodes::chain_id.eq(chain_id)
+        .and(masternodes::provider_registration_transaction_hash.eq(pro_reg_tx_hash));
+    let source = masternodes::dsl::masternodes.filter(predicate);
+    let values = (masternodes::platform_ping.eq(platform_ping),
+                  masternodes::platform_ping_date.eq(Some(platform_ping_date)));
+
+    diesel::update(source)
+        .set(values)
+        .execute(pooled_conn.deref_mut())
+}
 
 impl<'a> Masternode<'a> {
     pub fn simplified_masternode_entry_with_block_height_lookup<BHL>(&self, block_height_lookup: BHL) -> masternode::MasternodeEntry

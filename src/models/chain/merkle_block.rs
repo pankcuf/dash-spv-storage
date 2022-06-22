@@ -1,5 +1,8 @@
+use std::ops::DerefMut;
 use chrono::NaiveDateTime;
 use dash_spv_primitives::crypto::UInt256;
+use diesel::{ExpressionMethods, QueryDsl, QueryResult, RunQueryDsl, Table};
+use crate::get_pooled_connection;
 use crate::schema::merkle_blocks;
 
 /// queries:
@@ -54,5 +57,16 @@ pub struct NewMerkleBlock {
 
     pub flags: Option<Vec<u8>>,
     pub hashes: Option<Vec<u8>>,
+}
 
+impl MerkleBlock {
+    pub fn merkle_block_with_hash(block_hash: UInt256) -> QueryResult<MerkleBlock> {
+        let mut pooled_conn = get_pooled_connection();
+        let predicate = merkle_blocks::block_hash.eq(block_hash);
+        let selection = merkle_blocks::dsl::merkle_blocks::all_columns();
+        merkle_blocks::dsl::merkle_blocks
+            .select(selection)
+            .filter(predicate)
+            .first(pooled_conn.deref_mut())
+    }
 }
